@@ -1,3 +1,8 @@
+The error indicates that st.set_page_config must be the first Streamlit command in your script. To resolve this, move the st.set_page_config call to the very top of your trade.py file.
+
+Here is the corrected code:
+
+Python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
@@ -5,9 +10,15 @@ import plotly.graph_objects as go
 import json
 import os
 
+# Set page config
+st.set_page_config(page_title="Virtual Trading Platform", layout="wide")
+
 # Mock user authentication (replace with real user identification)
 def get_user_id():
-    return st.text_input("Enter User ID (e.g., user1, user2)").strip()
+    user_id = st.text_input("Enter User ID (e.g., user1, user2)").strip()
+    if user_id:
+        st.session_state.user_id = user_id
+    return user_id
 
 # File to store session data
 DATA_DIR = "user_data"
@@ -47,8 +58,6 @@ if user_id:
     # Initialize session state
     if "funds" not in st.session_state:
         load_data(user_id)
-
-    st.set_page_config(page_title="Virtual Trading Platform", layout="wide")
 
     # Sidebar: Display funds
     st.sidebar.markdown(
