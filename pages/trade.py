@@ -1,8 +1,3 @@
-The error indicates that st.set_page_config must be the first Streamlit command in your script. To resolve this, move the st.set_page_config call to the very top of your trade.py file.
-
-Here is the corrected code:
-
-Python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
@@ -22,7 +17,7 @@ def get_user_id():
 
 # File to store session data
 DATA_DIR = "user_data"
-if not os.path.exists(DATA_DIR):
+if not os.path.exists(DATA_DIR)):
     os.makedirs(DATA_DIR)
 
 def get_data_file(user_id):
