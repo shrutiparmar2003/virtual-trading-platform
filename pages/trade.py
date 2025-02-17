@@ -17,7 +17,7 @@ def get_user_id():
 
 # File to store session data
 DATA_DIR = "user_data"
-if not os.path.exists(DATA_DIR)):
+if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 def get_data_file(user_id):
