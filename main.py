@@ -5,12 +5,12 @@ st.set_page_config(page_title="Investment Dashboard", layout="wide")
 
 # Sidebar navigation
 st.sidebar.title("📍 Navigation")
-st.sidebar.page_link("pages\home.py", label="🏠 Home")
-st.sidebar.page_link("pages\portfolio.py", label="📈 Portfolio Overview")
-st.sidebar.page_link("pages\history_transactions.py", label="💵 Transaction History")
-st.sidebar.page_link("pages\watchlists.py", label="👀 Add Favourite stocks to watchlist")
-st.sidebar.page_link("pages\calculator_finance.py", label="🧮 Want to calculate?")
-st.sidebar.page_link("pages\live_finance_news.py", label="📰Keep yourself updated with latest news?")
+st.sidebar.page_link("pages/home.py", label="🏠 Home")
+st.sidebar.page_link("pages/portfolio.py", label="📈 Portfolio Overview")
+st.sidebar.page_link("pages/history_transactions.py", label="💵 Transaction History")
+st.sidebar.page_link("pages/watchlists.py", label="👀 Add Favourite stocks to watchlist")
+st.sidebar.page_link("pages/calculator_finance.py", label="🧮 Want to calculate?")
+st.sidebar.page_link("pages/live_finance_news.py", label="📰Keep yourself updated with latest news?")
 
 
 
