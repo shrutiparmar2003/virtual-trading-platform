@@ -1,0 +1,23 @@
+# Ignore Python bytecode
+*.pyc
+*.pyo
+__pycache__
+
+# Ignore virtual environment folder (if any)
+venv/
+env/
+ENV/
+
+# Ignore IDE-specific files (if using VS Code)
+.vscode/
+.idea/
+
+# Ignore log and temp files
+*.log
+*.tmp
+*.bak
+
+# Ignore large datasets if not part of version control
+data/
+spry-sequence-449403-d1-144b0539502a.json
+
