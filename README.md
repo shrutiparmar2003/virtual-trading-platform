@@ -18,7 +18,7 @@ Virtual Investments is a Python-based project aimed at simulating and managing v
 - **Watchlists:** Create and manage watchlists for tracking specific investments.
 - **Trade simulations:** Simulate trades to understand potential outcomes.
 
-### Technologies used: 
+### Technologies used
 
 - **Python:** The primary programming language used in the project.
 - **Streamlit:** For creating interactive web applications.
