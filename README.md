@@ -103,10 +103,5 @@ We welcome contributions from the community! If you'd like to contribute, please
 5. Push to the branch (`git push origin feature-branch`).
 6. Open a pull request.
 
-## Contact
-
-For any questions or inquiries, please contact:
-
-- Shruti Parmar - [GitHub](https://github.com/shrutiparmar2003)
 
 Thank you for using Virtual Investments!
