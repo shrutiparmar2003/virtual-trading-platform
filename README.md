@@ -17,6 +17,7 @@ Virtual Investments is a Python-based project aimed at simulating and managing v
 - **Transaction history:** Keep a record of all your transactions.
 - **Watchlists:** Create and manage watchlists for tracking specific investments.
 - **Trade simulations:** Simulate trades to understand potential outcomes.
+-  **Financial calculators available:** Like SIP, ROI, etc with input parameters(duration , annual returns ,etc). 
 
 ### Technologies used
 
