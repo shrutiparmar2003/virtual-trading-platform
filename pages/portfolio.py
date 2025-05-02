@@ -25,8 +25,20 @@ else:
     total_current_value = 0
 
     for ticker, data in st.session_state.portfolio.items():
-        stock = yf.Ticker(ticker)
-        stock_data = stock.history(period="1d")
+        # Import the Alpha Vantage module
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        import alpha_vantage_api as av
+        
+        # First try with Alpha Vantage as primary source
+        stock_data = av.get_stock_data(ticker, period="1d")
+        
+        # If Alpha Vantage data is empty, try Yahoo Finance
+        if stock_data.empty:
+            stock = yf.Ticker(ticker)
+            stock_data = stock.history(period="1d")
+            
         current_price = stock_data["Close"].iloc[-1] if not stock_data.empty else data["avg_price"]
         current_value = data["quantity"] * current_price
         profit_loss = current_value - data["total_spent"]
@@ -66,10 +78,40 @@ else:
     st.subheader("📉 Stock Price Movement")
     stock_selected = st.selectbox("Select a stock to view price trends", [stock for stock in st.session_state.portfolio.keys()])
     if stock_selected:
-        stock = yf.Ticker(stock_selected)
-        stock_hist = stock.history(period="1mo")
-        if not stock_hist.empty:
+        # Import the Alpha Vantage module
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        import alpha_vantage_api as av
+        
+        # First try with Alpha Vantage as primary source
+        stock_hist = av.get_stock_data(stock_selected, period="1mo")
+        
+        if stock_hist.empty:
+            # Try with a different time period in Alpha Vantage
+            stock_hist = av.get_stock_data(stock_selected, period="3mo")
+            
+            # If still empty, fall back to Yahoo Finance
+            if stock_hist.empty:
+                st.info(f"Trying alternative data source for {stock_selected}...")
+                stock = yf.Ticker(stock_selected)
+                stock_hist = stock.history(period="1mo")
+                
+                if stock_hist.empty:
+                    stock_hist = stock.history(period="3mo")
+                    if stock_hist.empty:
+                        st.error(f"❌ Unable to fetch data for {stock_selected}. Please verify the stock symbol.")
+                    else:
+                        st.success(f"✅ Successfully retrieved {stock_selected} data from Yahoo Finance!")
+                        fig_line = px.line(stock_hist, x=stock_hist.index, y="Close", title=f"{stock_selected} Price Movement (3mo)")
+                        st.plotly_chart(fig_line, use_container_width=True)
+                else:
+                    st.success(f"✅ Successfully retrieved {stock_selected} data from Yahoo Finance!")
+                    fig_line = px.line(stock_hist, x=stock_hist.index, y="Close", title=f"{stock_selected} Price Movement")
+                    st.plotly_chart(fig_line, use_container_width=True)
+            else:
+                fig_line = px.line(stock_hist, x=stock_hist.index, y="Close", title=f"{stock_selected} Price Movement (3mo)")
+                st.plotly_chart(fig_line, use_container_width=True)
+        else:
             fig_line = px.line(stock_hist, x=stock_hist.index, y="Close", title=f"{stock_selected} Price Movement")
             st.plotly_chart(fig_line, use_container_width=True)
-        else:
-            st.error("No price data available for this stock.")

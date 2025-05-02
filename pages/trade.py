@@ -81,53 +81,78 @@ if user_id:
 
         if ticker:
             try:
-                stock = yf.Ticker(ticker)
-                stock_data = stock.history(period="1mo")
-
-                if not stock_data.empty:
-                    stock_price = stock_data["Close"].iloc[-1]
-                    st.metric(label=f"📉 {ticker} Current Price", value=f"₹{stock_price:.2f}")
-
-                    # Stock Price Graph
-                    fig = go.Figure()
-                    fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name='Close Price'))
-                    fig.update_layout(title=f"{ticker} Price Trend", xaxis_title="Date", yaxis_title="Price", template="plotly_dark")
-                    st.plotly_chart(fig)
-
-                    # Buy & Sell section
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-                        quantity_buy = st.number_input(f"Buy {ticker} Quantity", min_value=1, value=1, step=1)
-                        if st.button("🔵 Buy Stock", use_container_width=True):
-                            total_cost = stock_price * quantity_buy
-                            if st.session_state.funds >= total_cost:
-                                st.session_state.funds -= total_cost
-                                st.session_state.portfolio[ticker] = {
-                                    "quantity": st.session_state.portfolio.get(ticker, {}).get("quantity", 0) + quantity_buy,
-                                    "avg_price": stock_price,
-                                    "total_spent": total_cost
-                                }
-                                st.session_state.transactions.append({"Stock": ticker, "Type": "Buy", "Quantity": quantity_buy, "Price": stock_price, "Total": total_cost})
-                                save_data(user_id)
-                                st.success(f"✅ Bought {quantity_buy} shares of {ticker} at ₹{stock_price:.2f}")
+                # Import the Alpha Vantage module first
+                import sys
+                import os
+                sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                import alpha_vantage_api as av
+                
+                # First try with Alpha Vantage as primary source
+                stock_data = av.get_stock_data(ticker, period="1mo")
+                
+                if stock_data.empty:
+                    # Try with a different time period in Alpha Vantage
+                    stock_data = av.get_stock_data(ticker, period="3mo")
+                    
+                    # If still empty, fall back to Yahoo Finance
+                    if stock_data.empty:
+                        st.info(f"Trying alternative data source for {ticker}...")
+                        stock = yf.Ticker(ticker)
+                        stock_data = stock.history(period="1mo")
+                        
+                        if stock_data.empty:
+                            stock_data = stock.history(period="3mo")
+                            if stock_data.empty:
+                                st.error(f"❌ Unable to fetch data for {ticker}. Please verify the stock symbol.")
+                                raise Exception(f"No data available for {ticker}")
                             else:
-                                st.error("❌ Insufficient funds!")
+                                st.success(f"✅ Successfully retrieved {ticker} data from Yahoo Finance!")
+                        else:
+                            st.success(f"✅ Successfully retrieved {ticker} data from Yahoo Finance!")
+                
+                stock_price = stock_data["Close"].iloc[-1]
+                st.metric(label=f"📉 {ticker} Current Price", value=f"₹{stock_price:.2f}")
 
-                    with col2:
-                        quantity_sell = st.number_input(f"Sell {ticker} Quantity", min_value=1, value=1, step=1)
-                        if st.button("🔴 Sell Stock", use_container_width=True):
-                            if ticker in st.session_state.portfolio and st.session_state.portfolio[ticker]["quantity"] >= quantity_sell:
-                                total_sell_value = stock_price * quantity_sell
-                                st.session_state.funds += total_sell_value
-                                st.session_state.portfolio[ticker]["quantity"] -= quantity_sell
-                                if st.session_state.portfolio[ticker]["quantity"] == 0:
-                                    del st.session_state.portfolio[ticker]
-                                st.session_state.transactions.append({"Stock": ticker, "Type": "Sell", "Quantity": quantity_sell, "Price": stock_price, "Total": total_sell_value})
-                                save_data(user_id)
-                                st.success(f"✅ Sold {quantity_sell} shares of {ticker} at ₹{stock_price:.2f}")
-                            else:
-                                st.error("❌ Not enough shares to sell!")
+                # Stock Price Graph
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=stock_data.index, y=stock_data['Close'], mode='lines', name='Close Price'))
+                fig.update_layout(title=f"{ticker} Price Trend", xaxis_title="Date", yaxis_title="Price", template="plotly_dark")
+                st.plotly_chart(fig)
+
+                # Buy & Sell section
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    quantity_buy = st.number_input(f"Buy {ticker} Quantity", min_value=1, value=1, step=1)
+                    if st.button("🔵 Buy Stock", use_container_width=True):
+                        total_cost = stock_price * quantity_buy
+                        if st.session_state.funds >= total_cost:
+                            st.session_state.funds -= total_cost
+                            st.session_state.portfolio[ticker] = {
+                                "quantity": st.session_state.portfolio.get(ticker, {}).get("quantity", 0) + quantity_buy,
+                                "avg_price": stock_price,
+                                "total_spent": total_cost
+                            }
+                            st.session_state.transactions.append({"Stock": ticker, "Type": "Buy", "Quantity": quantity_buy, "Price": stock_price, "Total": total_cost})
+                            save_data(user_id)
+                            st.success(f"✅ Bought {quantity_buy} shares of {ticker} at ₹{stock_price:.2f}")
+                        else:
+                            st.error("❌ Insufficient funds!")
+
+                with col2:
+                    quantity_sell = st.number_input(f"Sell {ticker} Quantity", min_value=1, value=1, step=1)
+                    if st.button("🔴 Sell Stock", use_container_width=True):
+                        if ticker in st.session_state.portfolio and st.session_state.portfolio[ticker]["quantity"] >= quantity_sell:
+                            total_sell_value = stock_price * quantity_sell
+                            st.session_state.funds += total_sell_value
+                            st.session_state.portfolio[ticker]["quantity"] -= quantity_sell
+                            if st.session_state.portfolio[ticker]["quantity"] == 0:
+                                del st.session_state.portfolio[ticker]
+                            st.session_state.transactions.append({"Stock": ticker, "Type": "Sell", "Quantity": quantity_sell, "Price": stock_price, "Total": total_sell_value})
+                            save_data(user_id)
+                            st.success(f"✅ Sold {quantity_sell} shares of {ticker} at ₹{stock_price:.2f}")
+                        else:
+                            st.error("❌ Not enough shares to sell!")
 
             except Exception:
                 st.warning("⚠️ Unable to fetch stock data. Please check the symbol and try again.")

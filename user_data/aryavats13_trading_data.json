@@ -1,0 +1,1 @@
+{"funds": 98933.4, "portfolio": {"AAPL": {"quantity": 5, "avg_price": 213.32, "total_spent": 1066.6}}, "transactions": [{"Stock": "AAPL", "Type": "Buy", "Quantity": 5, "Price": 213.32, "Total": 1066.6}]}

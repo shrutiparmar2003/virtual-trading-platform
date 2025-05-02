@@ -73,11 +73,35 @@ elif selected_watchlist:
     if watchlists[selected_watchlist]:
         for stock in watchlists[selected_watchlist]:
             try:
-                stock_data = yf.Ticker(stock)
-                history = stock_data.history(period="1d")
-
-                # Handle missing stock price
-                stock_price = f"₹{history['Close'].iloc[-1]:.2f}" if not history.empty else "N/A"
+                # Import the Alpha Vantage module
+                import sys
+                import os
+                sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+                import alpha_vantage_api as av
+                
+                # First try with Alpha Vantage as primary source
+                history = av.get_stock_data(stock, period="1d")
+                
+                if history.empty:
+                    # Try with a different time period in Alpha Vantage
+                    history = av.get_stock_data(stock, period="5d")
+                    
+                    # If still empty, fall back to Yahoo Finance
+                    if history.empty:
+                        stock_data = yf.Ticker(stock)
+                        history = stock_data.history(period="1d")
+                        if history.empty:
+                            history = stock_data.history(period="5d")
+                            if not history.empty:
+                                stock_price = f"₹{history['Close'].iloc[-1]:.2f}"
+                            else:
+                                stock_price = "N/A"
+                        else:
+                            stock_price = f"₹{history['Close'].iloc[-1]:.2f}"
+                    else:
+                        stock_price = f"₹{history['Close'].iloc[-1]:.2f}"
+                else:
+                    stock_price = f"₹{history['Close'].iloc[-1]:.2f}"
 
                 col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
 
@@ -120,7 +144,36 @@ elif selected_watchlist:
     st.subheader("📈 Stock Performance Charts")
     chart_stock = st.selectbox("Select Stock to View Chart", watchlists[selected_watchlist], key="chart_stock")
     if st.button("📉 Show Chart"):
-        chart_data = yf.Ticker(chart_stock).history(period="6mo")["Close"]
+        # Import the Alpha Vantage module
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        import alpha_vantage_api as av
+        
+        # First try with Alpha Vantage as primary source
+        chart_history = av.get_stock_data(chart_stock, period="6mo")
+        
+        if chart_history.empty:
+            # Try with a different time period in Alpha Vantage
+            chart_history = av.get_stock_data(chart_stock, period="1y")
+            
+            # If still empty, fall back to Yahoo Finance
+            if chart_history.empty:
+                st.info(f"Trying alternative data source for {chart_stock}...")
+                chart_stock_data = yf.Ticker(chart_stock)
+                chart_history = chart_stock_data.history(period="6mo")
+                
+                if chart_history.empty:
+                    chart_history = chart_stock_data.history(period="1y")
+                    if chart_history.empty:
+                        st.error(f"❌ Unable to fetch chart data for {chart_stock}. Please verify the stock symbol.")
+                        return
+                    else:
+                        st.success(f"✅ Successfully retrieved {chart_stock} chart data from Yahoo Finance!")
+                else:
+                    st.success(f"✅ Successfully retrieved {chart_stock} chart data from Yahoo Finance!")
+        
+        chart_data = chart_history["Close"]
         st.line_chart(chart_data)
 
     st.markdown("---")
