@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import os
 
-ALPHA_VANTAGE_API_KEY = "GHYGUT0H30EO32GS"  
+ALPHA_VANTAGE_API_KEY = "your api key"  
 
 def get_stock_data(symbol, period="1mo"):
     """
