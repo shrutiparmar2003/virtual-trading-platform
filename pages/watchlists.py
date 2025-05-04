@@ -167,7 +167,7 @@ elif selected_watchlist:
                     chart_history = chart_stock_data.history(period="1y")
                     if chart_history.empty:
                         st.error(f"❌ Unable to fetch chart data for {chart_stock}. Please verify the stock symbol.")
-                        return
+                        st.stop()
                     else:
                         st.success(f"✅ Successfully retrieved {chart_stock} chart data from Yahoo Finance!")
                 else:
